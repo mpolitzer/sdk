@@ -1,0 +1,47 @@
+#!/bin/sh
+
+set -e
+
+host=$1; shift
+arch=$1; shift
+abi=$1; shift
+
+# create a wrapper for eselect, other wrappers will be created by crossdev
+bin="/usr/bin/$host-eselect"
+cat <<- EOF > $bin
+	#!/usr/bin/env sh
+	PORTAGE_CONFIGROOT=/usr/$host eselect "\$@"
+	EOF
+chmod +x $bin
+
+eselect repository create crossdev # crossdev wants a separate overlay
+eselect repository enable musl     # we'll use musl instead of glibc, fetch it
+emaint sync -r musl
+
+# initialize crossdev so that we can change profile
+#export EXTRA_ECONF="--with-arch=$arch --with-abi=$abi" 
+crossdev \
+	--binutils '<2.36' \
+	--gcc      '<12' \
+	--kernel   '=5.15.63' \
+	--libc     '<1.2.4' \
+	--abis      $abi \
+	--env       EXTRA_ECONF="'--with-arch=$arch --with-abi=$abi'" \
+	--target $host --init-target > /dev/null
+$host-eselect profile set default/linux/riscv/20.0/rv64gc/$abi/musl
+
+# install the binary toolchain if available, build it otherwise
+emerge -Kq \
+	cross-$host/binutils \
+	cross-$host/gcc \
+	cross-$host/musl \
+	cross-$host/linux-headers \
+|| \
+crossdev \
+	--binutils '<2.36' \
+	--gcc      '<12' \
+	--kernel   '=5.15.63' \
+	--libc     '<1.2.4' \
+	--abis      $abi \
+	--env       EXTRA_ECONF="'--with-arch=$arch --with-abi=$abi'" \
+	--target $host --show-fail-log

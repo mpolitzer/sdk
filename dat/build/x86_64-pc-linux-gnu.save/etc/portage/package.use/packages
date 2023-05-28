@@ -1,0 +1,22 @@
+# disable unused features
+dev-vcs/git -iconv -perl -webdav
+
+# enable chroot across architectures with 'static-user'.
+# enable riscv64: user and system.
+app-emulation/qemu static-user qemu_softmmu_targets_riscv64 qemu_user_targets_riscv64
+
+# required by busybox[static]
+virtual/libcrypt static-libs
+sys-libs/libxcrypt static-libs
+
+# required by app-emulation/qemu[static-user]
+dev-libs/glib static-libs
+sys-libs/zlib static-libs
+sys-apps/attr static-libs
+dev-libs/libpcre2 static-libs
+
+# update is failing
+app-portage/eix sqlite
+
+# for cross compilation
+dev-lang/rust nightly rust-src llvm_targets_RISCV

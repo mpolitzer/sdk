@@ -1,0 +1,23 @@
+#!/bin/sh
+
+set -e
+
+host=$1; shift
+
+## emerge rust and rust-std(cross), version must match
+#echo "=dev-lang/rust-1.68.2" >> /etc/portage/package.accept_keywords/packages
+#echo "=virtual/rust-1.68.2" >> /etc/portage/package.accept_keywords/packages
+#echo "=cross-$host/rust-std-1.68.2-r1 **" >> /etc/portage/package.accept_keywords/packages
+#ln -s /var/db/repos/local/sys-devel/rust-std/ /var/db/repos/crossdev/cross-$host/
+#
+emerge -Dukq -j$(nproc) \
+	virtual/rust \
+	dev-lang/rust \
+
+# doesn't really work...
+#bin="/usr/bin/$host-cargo"
+#cat <<- EOF > $bin
+#	#!/usr/bin/env sh
+#	cargo -Z build-std=std,core,alloc,panic_abort,proc_macro --target=/usr/$host/etc/$host.json "\$@"
+#	EOF
+#chmod +x $bin

@@ -1,0 +1,3 @@
+sys-fs/e2tools
+=virtual/rust-1.68.2
+=dev-lang/rust-1.68.2

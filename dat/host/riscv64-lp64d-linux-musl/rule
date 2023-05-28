@@ -1,0 +1,32 @@
+FROM gentoo/portage as portage
+FROM gentoo/stage3  as stage3
+
+ARG build=x86_64-pc-linux-gnu
+ARG host=riscv64-lp64d-linux-musl
+ARG target=riscv64-lp64d-linux-musl
+
+WORKDIR /tmp/workdir
+
+COPY --from=portage \
+     --chown=portage:portage \
+     /var/db/repos/gentoo/       /var/db/repos/gentoo/
+COPY dat/portage/                /var/db/repos/local/
+
+COPY dat/build/$build/root       /
+COPY dat/host/$host/root         /usr/$host/
+
+COPY cache/$build/               /var/cache/$build/
+COPY dat/host/$host/000.sh       /tmp/000.sh
+RUN  /tmp/000.sh $host rv64gc lp64d
+
+COPY dat/host/$host/001.sh       /tmp/001.sh
+RUN  /tmp/001.sh $host rv64gc lp64d
+
+COPY dat/host/$host/002.sh       /tmp/002.sh
+RUN  /tmp/002.sh $host rv64gc lp64d
+
+COPY cache/$host/                /var/cache/$host/
+COPY dat/host/$host/003.sh       /tmp/003.sh
+RUN  /tmp/003.sh $host rv64gc lp64d
+
+COPY dat/host/$host/$host.json   /etc/$host.json

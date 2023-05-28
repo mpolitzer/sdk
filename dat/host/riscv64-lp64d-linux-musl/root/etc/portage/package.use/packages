@@ -1,0 +1,3 @@
+## busybox [static]
+#sys-apps/busybox make-symlinks static
+sys-apps/toybox make-symlinks

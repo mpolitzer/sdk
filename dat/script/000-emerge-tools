@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+emerge -Dukq -j$(nproc) \
+	app-arch/cpio \
+	app-arch/libarchive \
+	app-eselect/eselect-repository \
+	dev-vcs/git \
+	sys-devel/bc \
+	sys-devel/crossdev \
+	sys-fs/e2tools \
+	sys-fs/genext2fs

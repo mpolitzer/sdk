@@ -1,0 +1,5 @@
+I_KNOW_WHAT_I_AM_DOING_CROSS=yes
+RUST_CROSS_TARGETS=(
+	"RISCV:riscv64gc-unknown-linux-musl:riscv64-lp64d-linux-musl"
+)
+PKG_CONFIG_SYSROOT_DIR=/usr/riscv64-lp64d-linux-musl/

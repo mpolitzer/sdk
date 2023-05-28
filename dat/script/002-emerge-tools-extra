@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+host=$1; shift
+
+emerge -Dukq -j$(nproc) \
+	app-editors/neovim \
+	app-emulation/qemu \
+	app-portage/eix \
+	app-portage/gentoolkit \
+	sys-fs/ncdu \
+&& eix-update -x musl \
+&& cp /usr/bin/qemu-riscv64 /usr/$host/usr/bin/
