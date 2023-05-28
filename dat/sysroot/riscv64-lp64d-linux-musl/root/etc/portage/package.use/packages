@@ -1,0 +1,5 @@
+## busybox [static]
+virtual/libcrypt static-libs
+sys-libs/libxcrypt static-libs
+sys-apps/busybox make-symlinks static
+sys-apps/toybox make-symlinks

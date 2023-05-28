@@ -1,0 +1,50 @@
+#!/usr/bin/env sh
+
+help() {
+cat << EOF
+$0 is a wrapper of emerge (gentoo's package manager)
+  tailored to install cross compilation packages.
+
+usage: $0 [OPTION]... -- [PACKAGES]...
+
+available options: 
+  --root=<directory>  root directory where the image will be assembled
+
+example:
+  $0 --root=/tmp/rootfs -- @system
+
+EOF
+}
+
+die() {
+	echo "error: $@"
+	help
+	exit 1
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--)
+		break
+		;;
+	--root=*)
+		root="${1#*=}"
+		;;
+	--help|-h)
+		help
+		exit 0
+		;;
+	*)
+		die "unrecognized parameter"
+		break
+		;;
+	esac
+	shift
+done
+
+[ -z "$root" ] && die "required parameter '--root=<directory>' is missing."
+
+emerge -Kq \
+	--config-root=/usr/$sysroot \
+	--root="$root" \
+	"$@"

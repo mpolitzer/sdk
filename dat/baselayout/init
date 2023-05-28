@@ -1,0 +1,26 @@
+#!/bin/sh
+
+mount -n -t proc proc /proc
+mount -n -t sysfs sysfs /sys
+mdev -s
+
+# store command to run later
+if [ -n "$*" ]; then
+	bootargs=/etc/init.d/S99-bootargs
+	cat <<- EOF > $bootargs
+	#!/bin/sh
+	case "\$1" in
+	start)
+		mount -o bind /dev  /mnt/dapp/dev
+		mount -o bind /proc /mnt/dapp/proc
+		mount -o bind /sys  /mnt/dapp/sys
+
+		chroot /mnt/dapp $*
+		poweroff
+		;;
+	esac
+	EOF
+	chmod +x $bootargs
+	unset bootargs
+fi
+exec /sbin/init
