@@ -1,0 +1,5 @@
+engine=docker
+build=x86_64-pc-linux-gnu
+sysroot=riscv64-lp64d-linux-musl
+target=riscv64-lp64d-linux-musl
+QEMU_LD_PREFIX=/usr/riscv64-lp64d-linux-musl

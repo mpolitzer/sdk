@@ -1,0 +1,3 @@
+::sysinit:/etc/init.d/rcS start
+hvc0::askfirst:/bin/sh
+::shutdown:/etc/init.d/rcS stop

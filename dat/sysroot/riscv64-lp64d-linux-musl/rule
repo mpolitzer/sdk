@@ -1,0 +1,35 @@
+FROM gentoo/portage as portage
+FROM gentoo/stage3  as stage3
+
+ARG build=x86_64-pc-linux-gnu
+ARG sysroot=riscv64-lp64d-linux-musl
+ARG target=riscv64-lp64d-linux-musl
+
+WORKDIR /tmp/workdir
+
+COPY --from=portage \
+     --chown=portage:portage \
+     /var/db/repos/gentoo/       /var/db/repos/gentoo/
+COPY dat/portage/                /var/db/repos/local/
+#RUN emerge --sync
+
+COPY dat/build/$build/root       /
+COPY dat/sysroot/$sysroot/root   /usr/$sysroot/
+COPY cache/$build/               /var/cache/$build/
+RUN emerge -NDukq @world
+
+COPY dat/sysroot/$sysroot/000.sh /tmp/000.sh
+RUN  /tmp/000.sh $sysroot rv64gc lp64d
+
+COPY dat/sysroot/$sysroot/001.sh /tmp/001.sh
+RUN  /tmp/001.sh $sysroot rv64gc lp64d
+
+#COPY dat/sysroot/$sysroot/002.sh /tmp/002.sh
+#RUN  /tmp/002.sh $sysroot rv64gc lp64d
+#
+#COPY cache/$sysroot/                    /var/cache/$sysroot/
+#COPY dat/sysroot/$sysroot/003.sh        /tmp/003.sh
+#RUN  /tmp/003.sh $sysroot rv64gc lp64d
+#
+#COPY dat/sysroot/$sysroot/$sysroot.json /etc/$sysroot.json
+COPY --chown=root:root --chmod=0755 dat/script/* /usr/bin/

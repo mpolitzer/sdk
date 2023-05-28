@@ -1,0 +1,32 @@
+name: Cache
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]'
+      - '[0-9]+.[0-9]+.[0-9]-rc[0-9]+'
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        host: [riscv64-lp64d-linux-musl]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: configure
+        run: |
+          make config host=${{ matrix.host }}
+          make env >> $GITHUB_ENV
+      - name: cache
+        id: portage
+        uses: actions/cache@v3
+        with:
+          path: cache/
+          key: ${{ runner.os }}.${{ matrix.host }}.${{ env.VERSION }}.${{ github.run_id }}
+      - name: store cache
+        run: |
+          make copy
+        env:
+          DOCKER_OPTS: --load --cache-from type=gha --cache-to type=gha,mode=max

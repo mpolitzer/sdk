@@ -1,0 +1,4 @@
+# <file system>	<mount pt>	<type>	<options>		<dump>	<pass>
+#/dev/root	/		auto	defaults		1	1
+proc		/proc		proc	defaults		0	0
+sysfs		/sys		sysfs	nosuid,noexec,nodev	0	0
