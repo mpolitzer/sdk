@@ -1,0 +1,20 @@
+# cross capable rust
+dev-lang/rust clippy llvm_targets_RISCV nightly profiler rust-analyzer rust-src rustfmt
+
+# qemu+deps capable of running in sysroot
+app-emulation/qemu static-user qemu_softmmu_targets_riscv64 qemu_user_targets_riscv64
+dev-libs/glib static-libs
+sys-libs/zlib static-libs
+sys-apps/attr static-libs
+dev-libs/libpcre2 static-libs
+
+# trigger useless rebuilds
+sys-devel/gettext -openmp
+app-crypt/libb2 -filecaps
+app-portage/portage -openmp
+net-misc/iputils -filecaps
+
+app-alternatives/cpio libarchive -gnu
+
+# machine-emulator
+dev-libs/boost context

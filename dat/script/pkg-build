@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+
+help() {
+cat << EOF
+$0 is a wrapper of emerge, gentoo's package manager.
+  tailored to build cross compilation packages.
+
+usage: $0 [OPTION]... -- [PACKAGES]...
+
+example:
+  $0 -- -av busybox
+  $0 --help
+
+EOF
+}
+
+die() {
+	echo "error: $@"
+	help
+	exit 1
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--)
+		break
+		;;
+	--help|-h)
+		help
+		exit 0
+		;;
+	*)
+		die "unrecognized parameter"
+		break
+		;;
+	esac
+	shift
+done
+$sysroot-emerge -kq "$@"

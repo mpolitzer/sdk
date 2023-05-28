@@ -1,0 +1,182 @@
+#!/bin/sh
+
+set -e
+
+help() {
+cat << EOF
+usage: $0 [OPTION]...
+
+available options: 
+  --ramfs=<filename>  generate a .img from the contents of 'root' directory
+  --ext2=<filename>   generate a .ext2 partition from the contents of 'root' directory
+  --tgz=<filename>   generate a .tar.gz file from the contents of 'root' directory
+  --prune=<list>      trim 'root' before creating the image
+                      list a combination of: dev,doc,cache,metadata (or all)
+  --root=<directory>  specify the rootfs location
+  --size=<number>     optional: size in bytes of the .ext2 image (may fail if too small)
+  --skel=<directory>  optional: directory to overlay on top of the rootfs
+
+example:
+  $0 --root=/tmp/rootfs --prune=dev,doc,cache --ext2=/tmp/rootfs.ext2 --tgz=/tmp/rootfs.tar.gz
+
+EOF
+}
+
+die() {
+	echo "error: $@"
+	help
+	exit 1
+}
+
+# remove unwanted files from the rootfs
+# $@ - category of entries to remove
+prunner() {
+while [ $# -gt 0 ]; do
+	case $1 in
+	cache)
+		echo "prunning: $1"
+		find "$root" \
+			-name '*.pyc' -or \
+			-name '__pycache__' -or \
+			-wholename $root/usr/lib/python*/test -or \
+			-wholename $root/var/lib/gentoo/news \
+		| xargs rm -rf
+		;;
+	dev)
+		echo "prunning: $1"
+		find "$root" \
+			-name '*.a' -or \
+			-name '*.h' -or \
+			-name '*.hpp' -or \
+			-name '*.o' -or \
+			-name 'tests' -or \
+			-wholename $root/usr/lib/binutils/*/*/ldscripts -or \
+			-wholename $root/etc/portage/savedconfig -or \
+			-wholename $root/usr/lib/pkgconfig \
+		| xargs rm -rf
+		;;
+	doc)
+		echo "prunning: $1"
+		find "$root" \
+			-wholename $root/usr/share/binutils-data/*/*/info -or \
+			-wholename $root/usr/share/binutils-data/*/*/locale -or \
+			-wholename $root/usr/share/binutils-data/*/*/man -or \
+			-wholename $root/usr/share/gcc-data/*/*/info -or \
+			-wholename $root/usr/share/gcc-data/*/*/man -or \
+			-wholename $root/usr/lib/node_modules/npm/docs \
+		| xargs rm -rf
+		;;
+	magic)
+		echo "prunning: $1"
+		find "$root" \
+			-wholename $root/usr/share/misc/magic.mgc -or \
+			-wholename $root/usr/share/misc/magic \
+		| xargs rm -rf
+		;;
+	metadata)
+		echo "prunning: $1"
+		find "$root" \
+			-wholename $root/var/db/pkg \
+		| xargs rm -rf
+		;;
+	terminfo)
+		echo "prunning: $1"
+		find "$root" \
+			-wholename $root/usr/share/terminfo -or \
+			-wholename $root/usr/share/misc/terminfo \
+		| xargs rm -rf
+		;;
+	none)
+		;;
+	all)
+		prunner \
+			cache \
+			dev \
+			doc \
+			magic \
+			metadata \
+			terminfo
+		;;
+	esac
+	shift
+done
+}
+
+# $1 - indicates where the partial root filesystem is located
+# $2 - the resulting ext2 partition file
+# $3 - directory structure to add on top of the rootfs (optional)
+# $4 - R size (optional)
+ext2() {
+	blocksize=4096
+
+	root="$1"; shift
+	ext2="$1"; shift
+	skel="$1"; shift
+	size="$1"; shift
+
+	echo "generating: $ext2..."
+	[ -n "$skel" ] && r_skel="-d $skel"
+	[ -n "$size" ] && r_size="-r $size"
+	mkdir -p `dirname $ext2`
+	genext2fs \
+		-fzB "$blocksize" \
+		-i 16384 \
+		"$r_size" \
+		"$r_skel" \
+		-L gentoo -d "$root" "$ext2"
+}
+
+tgz() {
+	root="$1"
+	tgz="$2"
+
+	mkdir -p `dirname $tgz`
+	echo "generating: $tgz..."
+	tar czf $tgz -C $root .
+}
+
+ramfs() {
+	root="$1"; shift
+	ramfs="$1"; shift
+	skel="$1"; shift
+
+	mkdir -p `dirname $ramfs`
+	echo "generating: $ramfs..."
+	[ x"$skel" != x ] && rsync -a "$skel"/ "$root"/
+	(cd $root && find . | cpio -oH newc) | gzip -n9 > $ramfs
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--root=*)
+		root=`realpath "${1#*=}"`
+		;;
+	--skel=*)
+		skel=`realpath "${1#*=}"`
+		;;
+	--prune=*) prunelist="${1#*=}" ;;
+	--ext2=*)       ext2="${1#*=}" ;;
+	--size=*)       size="${1#*=}" ;;
+	--tgz=*)         tgz="${1#*=}" ;;
+	--ramfs=*)     ramfs="${1#*=}" ;;
+	--help|-h)
+		help
+		exit 0
+		;;
+	*)
+		die "unrecognized parameter"
+		break
+		;;
+	esac
+	shift
+done
+
+[ -z "$root" ] && die "required parameter '--root=<directory>' is missing."
+[ -z "$prunelist" ] && [ -z "$tgz" -a -z "$ext2" -a -z "$ramfs" ] && die "nothing to do."
+
+[ -n "$prunelist" ] && ( prunner `echo $prunelist | tr "," " "` )
+[ -n "$ext2" ] && ext2 "$root" "$ext2" "$skel" "$size"
+[ -n "$tgz" ] && tgz "$root" "$tgz"
+[ -n "$ramfs" ] && ramfs "$root" "$ramfs" "$skel"
+
+echo "done $?"

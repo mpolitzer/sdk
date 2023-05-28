@@ -1,0 +1,36 @@
+name: Cache
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]'
+      - '[0-9]+.[0-9]+.[0-9]-rc[0-9]+'
+jobs:
+  base:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sysroot: [riscv64-lp64d-linux-musl]
+    steps:
+      - uses: actions/checkout@v3
+      - name: configure
+        run: |
+          make config sysroot=${{ matrix.sysroot }}
+          make ci.env >> $GITHUB_ENV
+      - name: cache
+        id: portage
+        uses: actions/cache@v3
+        with:
+          path: cache/
+          key: ${{ runner.os }}.${{ matrix.sysroot }}.${{ env.VERSION }}.${{ github.run_id }}
+          fail-on-cache-miss: true
+          restore-keys: |
+            ${{ runner.os }}.${{ matrix.sysroot }}.${{ env.VERSION }}.${{ github.run_id }}
+            ${{ runner.os }}.${{ matrix.sysroot }}.${{ env.VERSION }}.
+            ${{ runner.os }}.${{ matrix.sysroot }}.
+            ${{ runner.os }}.
+      - name: store cache
+        run: |
+          make copy
+        env:
+          DOCKER_OPTS: --load --cache-from type=gha --cache-to type=gha,mode=max

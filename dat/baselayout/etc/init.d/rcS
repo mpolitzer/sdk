@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# execute /etc/init.d/S* in numerical order.
+for i in /etc/init.d/S??*; do
+	# Ignore dangling symlinks (if any).
+	[ ! -f "$i" ] && continue
+
+	case "$i" in
+	*.sh)
+		(# Source shell script for speed.
+			trap - INT QUIT TSTP
+			set "$1"
+			. $i
+		)
+		;;
+	*)
+		# No sh extension, so fork subprocess.
+		$i "$1"
+		;;
+	esac
+done
