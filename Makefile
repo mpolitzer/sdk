@@ -20,6 +20,8 @@ help:
 	@echo "  help    - show available commands"
 	@echo "  list    - show available targets"
 	@echo "  config  - create a .config (required to build)"
+	@echo "  xsetup  - setup Docker cross execution"
+	@echo "  xsetup-required - evaluate if xsetup step is required"
 	@echo "docker targets:"
 	@echo "  build   - build the SDK image"
 	@echo "  run     - run the SDK environment"
@@ -68,5 +70,8 @@ copy:
 	    $(engine) rm -v $$ID
 push:
 	$(engine) push $(IMAGE)
-
-.PHONY: default list help config copy build run copy env clean
+xsetup:
+	docker run --privileged --rm  linuxkit/binfmt:bebbae0c1100ebf7bf2ad4dfb9dfd719cf0ef132
+xsetup-required:
+	@echo 'riscv64 buildx setup required:' `docker buildx ls | grep -q riscv64 && echo no || echo yes`
+.PHONY: default list help config copy build run copy env clean xsetup xsetup-required

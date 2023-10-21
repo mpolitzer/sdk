@@ -11,9 +11,6 @@ abi=$1; shift
 emerge -bkq \
 	app-alternatives/cpio \
 	app-arch/libarchive \
-	app-containers/buildah \
-	app-containers/podman \
-	app-containers/skopeo \
 	app-editors/neovim \
 	app-emulation/qemu \
 	app-portage/eix \

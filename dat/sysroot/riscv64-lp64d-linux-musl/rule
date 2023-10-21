@@ -1,4 +1,4 @@
-FROM gentoo/portage as portage
+FROM --platform=linux/amd64 gentoo/portage as portage
 FROM gentoo/stage3  as stage3
 
 ARG build=x86_64-pc-linux-gnu

@@ -8,7 +8,7 @@ SRC_URI="https://github.com/cartesi/genext2fs/archive/refs/tags/v${PV}.tar.gz ->
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~alpha amd64 arm ~hppa ~mips ppc ~sparc x86"
+KEYWORDS="amd64 arm64"
 DEPEND="app-arch/libarchive"
 
 src_prepare() {
