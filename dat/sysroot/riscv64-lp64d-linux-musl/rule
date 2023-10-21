@@ -1,7 +1,7 @@
 FROM gentoo/portage as portage
 FROM gentoo/stage3  as stage3
 
-ARG build=x86_64-pc-linux-gnu
+ARG build=aarch64-unknown-linux-gnu
 ARG sysroot=riscv64-lp64d-linux-musl
 ARG target=riscv64-lp64d-linux-musl
 
@@ -27,10 +27,10 @@ RUN  /tmp/001.sh $sysroot rv64gc lp64d
 COPY dat/sysroot/$sysroot/001-emulator.sh /tmp/001.sh
 RUN  /tmp/001.sh $sysroot rv64gc lp64d
 
-COPY dat/sysroot/$sysroot/001-rust-bin.sh /tmp/001.sh
-RUN  /tmp/001.sh $sysroot rv64gc lp64d
+# COPY dat/sysroot/$sysroot/001-rust-bin.sh /tmp/001.sh
+# RUN  /tmp/001.sh $sysroot rv64gc lp64d
 
-COPY dat/sysroot/$sysroot/001-zig-bin.sh /tmp/001.sh
-RUN  /tmp/001.sh $sysroot rv64gc lp64d
+# COPY dat/sysroot/$sysroot/001-zig-bin.sh /tmp/001.sh
+# RUN  /tmp/001.sh $sysroot rv64gc lp64d
 
 COPY --chown=root:root --chmod=0755 dat/script/* /usr/bin/
