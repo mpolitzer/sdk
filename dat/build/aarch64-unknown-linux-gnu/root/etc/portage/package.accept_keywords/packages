@@ -1,0 +1,18 @@
+# rust
+=dev-lang/rust-1.68.2
+=virtual/rust-1.68.2
+
+# zig
+=dev-lang/zig-bin-0.11.0
+=app-eselect/eselect-zig-1-r1
+
+# machine-emulator
+=dev-lua/md5-1.3-r1
+=dev-libs/libb64-2.0.0.1 **
+
+# rust
+=dev-lang/rust-bin-1.73.0
+
+# zig
+=app-eselect/eselect-zig-1-r1
+=dev-lang/zig-bin-0.11.0
